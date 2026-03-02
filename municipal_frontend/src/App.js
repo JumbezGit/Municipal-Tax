@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import axios from 'axios';
 import './App.css';
 
-// Configure axios
-const API_URL = 'http://localhost:8000/api';
+// Configure axios - use environment variable in production
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // Components
 const Login = ({ setUser, setIsAdmin }) => {

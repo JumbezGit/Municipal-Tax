@@ -20,7 +20,7 @@ A full-stack Django + React web application for municipal tax management.
 - **Backend**: Django 4.2, Django REST Framework, JWT Authentication
 - **Frontend**: React 18, Bootstrap 5, Axios
 - **Database**: PostgreSQL (for production), SQLite (for development)
-- **Deployment**: Ready for Render.com
+- **Deployment**: Render.com (Backend) + Vercel (Frontend)
 
 ## Project Structure
 ```
@@ -92,7 +92,13 @@ bash
 npm install
 ```
 
-3. Run development server:
+3. Create .env file (copy from .env.example):
+```
+bash
+cp .env.example .env
+```
+
+4. Run development server:
 ```
 bash
 npm start
@@ -113,13 +119,15 @@ The frontend will be available at: http://localhost:3000
 | GET | /api/admin/payments/ | All payments | Admin |
 | GET | /api/admin/unpaid/ | Unpaid taxpayers | Admin |
 
-## Deployment to Render.com
+## Deployment
+
+### Backend - Render.com
 
 1. Push code to GitHub
 2. Create a new Web Service on Render
 3. Connect to your GitHub repository
 4. Configure:
-   - Build Command: `pip install -r requirements.txt`
+   - Build Command: `./build.sh`
    - Start Command: `gunicorn municipal_backend.wsgi --log-file -`
 5. Add environment variables:
    - `DB_NAME`: PostgreSQL database name
@@ -130,10 +138,22 @@ The frontend will be available at: http://localhost:3000
    - `SECRET_KEY`: Django secret key
    - `DEBUG`: False
 
+### Frontend - Vercel
+
+1. Push the `municipal_frontend` folder to a separate GitHub repository (or use monorepo)
+2. Go to [Vercel](https://vercel.com) and sign in
+3. Click "Add New Project" and import your GitHub repository
+4. Configure:
+   - Framework Preset: Create React App
+   - Build Command: `npm run build`
+   - Output Directory: `build`
+5. Add Environment Variable:
+   - `REACT_APP_API_URL`: Your Render backend URL (e.g., `https://your-render-app.onrender.com/api`)
+6. Deploy!
+
 ## Usage
 
 1. **Admin Login**: Access `/login` with admin credentials (admin/admin123)
 2. **Taxpayer Registration**: New taxpayers can register at `/register`
 3. **Make Payments**: Taxpayers can pay their property tax from their dashboard
 4. **Print Reports**: Admin can print unpaid taxpayer reports from the dashboard
-"# Municipal-Tax" 
