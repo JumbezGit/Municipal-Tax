@@ -43,7 +43,7 @@ def register_taxpayer(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_taxpayer(request):
-    """Login a taxpayer."""
+    """Login a taxpayer or admin user."""
     username = request.data.get('username')
     password = request.data.get('password')
     
@@ -67,6 +67,20 @@ def login_taxpayer(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
     
+    # Check if user is admin (is_staff or is_superuser)
+    if user.is_staff or user.is_superuser:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'Login successful',
+            'user': UserSerializer(user).data,
+            'taxpayer': None,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        }, status=status.HTTP_200_OK)
+    
+    # Check if user is a taxpayer
     if not hasattr(user, 'taxpayer'):
         return Response(
             {'error': 'User is not a taxpayer'},
@@ -91,6 +105,20 @@ def login_taxpayer(request):
 @permission_classes([IsAuthenticated])
 def payments(request):
     """Get or create payments for the authenticated taxpayer."""
+    # Admin users can't make payments through this endpoint
+    if request.user.is_staff or request.user.is_superuser:
+        return Response(
+            {'error': 'Admin users cannot make payments through this endpoint'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Check if user has taxpayer profile
+    if not hasattr(request.user, 'taxpayer'):
+        return Response(
+            {'error': 'User is not a taxpayer'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     taxpayer = request.user.taxpayer
     
     if request.method == 'GET':
@@ -138,6 +166,20 @@ def payments(request):
 @permission_classes([IsAuthenticated])
 def taxpayer_profile(request):
     """Get the authenticated taxpayer's profile."""
+    # Admin users don't have taxpayer profile
+    if request.user.is_staff or request.user.is_superuser:
+        return Response(
+            {'error': 'Admin users do not have a taxpayer profile'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if user has taxpayer profile
+    if not hasattr(request.user, 'taxpayer'):
+        return Response(
+            {'error': 'User is not a taxpayer'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     taxpayer = request.user.taxpayer
     serializer = TaxpayerSerializer(taxpayer)
     return Response(serializer.data)
