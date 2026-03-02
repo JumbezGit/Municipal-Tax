@@ -64,7 +64,7 @@ ROOT_URLCONF = 'municipal_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'municipal_frontend' / 'build'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,7 +140,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'municipal_frontend' / 'build' / 'static']
+
+# Only add React build static files if the directory exists (for production)
+react_static_dir = BASE_DIR / 'municipal_frontend' / 'build' / 'static'
+STATICFILES_DIRS = [react_static_dir] if react_static_dir.exists() else []
 
 # Media files
 MEDIA_URL = '/media/'
